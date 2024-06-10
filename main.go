@@ -17,8 +17,8 @@ func main() {
 	fs := http.FileServer(http.Dir("."))
 
 	mux.Handle("/app/*", api.mwMetrics(http.StripPrefix("/app", fs)))
-	mux.HandleFunc("/healthz", handleHealthz)
-	mux.HandleFunc("/metrics", api.handleDisplayMetrics)
+	mux.HandleFunc("GET /healthz", handleHealthz)
+	mux.HandleFunc("GET /metrics", api.handleDisplayMetrics)
 	mux.HandleFunc("/reset", api.handleResetMetrics)
 	srv := http.Server{
 		Addr:    ADDRESS,
