@@ -18,7 +18,7 @@ func main() {
 
 	mux.Handle("/app/*", api.mwMetrics(http.StripPrefix("/app", fs)))
 	mux.HandleFunc("GET /api/healthz", handleHealthz)
-	mux.HandleFunc("GET /api/metrics", api.handleDisplayMetrics)
+	mux.HandleFunc("GET /admin/metrics", api.handleDisplayMetrics)
 	mux.HandleFunc("/api/reset", api.handleResetMetrics)
 	srv := http.Server{
 		Addr:    ADDRESS,
