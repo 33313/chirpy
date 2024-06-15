@@ -20,6 +20,7 @@ func main() {
 	mux.HandleFunc("GET /api/healthz", handleHealthz)
 	mux.HandleFunc("GET /admin/metrics", api.handleDisplayMetrics)
 	mux.HandleFunc("/api/reset", api.handleResetMetrics)
+	mux.HandleFunc("POST /api/validate_chirp", api.handleValidateChirp)
 	srv := http.Server{
 		Addr:    ADDRESS,
 		Handler: mux,
