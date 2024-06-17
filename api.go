@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"regexp"
+	"strconv"
+
+	"github.com/myshkovsky/chirpy/internal/database"
 )
 
 type fsAPI struct {
 	hits int
+	db   *database.DB
 }
 
 func (api *fsAPI) mwMetrics(next http.Handler) http.Handler {
@@ -39,12 +42,9 @@ func (api *fsAPI) handleResetMetrics(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Hits reset to 0"))
 }
 
-func (api *fsAPI) handleValidateChirp(w http.ResponseWriter, r *http.Request) {
+func (api *fsAPI) handlePostChirp(w http.ResponseWriter, r *http.Request) {
 	type jsonParams struct {
 		Body string `json:"body"`
-	}
-	type success struct {
-		Cleaned string `json:"cleaned_body"`
 	}
 	type fail struct {
 		Error string `json:"error"`
@@ -55,7 +55,7 @@ func (api *fsAPI) handleValidateChirp(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&params)
 	if err != nil {
 		log.Printf("Error decoding parameters: %s", err)
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -64,45 +64,74 @@ func (api *fsAPI) handleValidateChirp(w http.ResponseWriter, r *http.Request) {
 			Error: "Chirp is too long",
 		})
 		if err != nil {
-			log.Printf("Error marshalling json: %s", err)
-			w.WriteHeader(500)
-			return
+            handleJsonError(w, err)
+            return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(400)
+		w.WriteHeader(http.StatusBadRequest)
 		w.Write(data)
 		return
 	}
-	res, err := json.Marshal(success{
-        Cleaned: cleanChirp(params.Body),
-	})
+
+	chirp, err := api.db.CreateChirp(params.Body)
 	if err != nil {
-		log.Printf("Error marshalling json: %s", err)
-		w.WriteHeader(500)
+		log.Printf("Error creating Chirp: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	res, err := json.Marshal(chirp)
+	if err != nil {
+        handleJsonError(w, err)
+        return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusCreated)
 	w.Write(res)
+}
+
+func (api *fsAPI) handleGetChirps(w http.ResponseWriter, r *http.Request) {
+	chirps := api.db.GetChirps()
+	res, err := json.Marshal(chirps)
+	if err != nil {
+        handleJsonError(w, err)
+        return
+	}
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusOK)
+    w.Write(res)
+}
+
+func (api *fsAPI) handleGetChirp(w http.ResponseWriter, r *http.Request) {
+    n, err := strconv.Atoi(r.PathValue("id"))
+    if err != nil {
+        log.Fatalf("Error converting string->int: %s", err)
+    }
+    chirp, ok := api.db.GetChirp(n)
+    if !ok {
+        w.Header().Set("Content-Type", "text/plain")
+        w.WriteHeader(http.StatusNotFound)
+        w.Write([]byte("404 Not Found"))
+        return
+    }
+	res, err := json.Marshal(chirp)
+	if err != nil {
+        handleJsonError(w, err)
+        return
+	}
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusOK)
+    w.Write(res)
+}
+
+func handleJsonError(w http.ResponseWriter, err error) {
+		log.Printf("Error marshalling json: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
 }
 
 func handleHealthz(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("OK"))
-}
-
-func cleanChirp(msg string) string {
-    badwords := [3]string{"kerfuffle", "sharbert", "fornax"}
-    clean := msg
-    for _, word := range badwords {
-        clean = cleanWord(clean, word)
-    }
-    return clean
-}
-
-func cleanWord(msg string, badword string) string {
-    re := regexp.MustCompile(`(?i)`+badword)
-    replacement := "****"
-    return re.ReplaceAllString(msg, replacement)
 }

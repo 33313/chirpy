@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"github.com/myshkovsky/chirpy/internal/database"
 )
 
 const (
@@ -10,8 +11,13 @@ const (
 )
 
 func main() {
+    newDB, err := database.NewDB("./database.json")
+    if err != nil {
+        panic(err)
+    }
 	api := fsAPI{
 		hits: 0,
+        db: newDB,
 	}
 	mux := http.NewServeMux()
 	fs := http.FileServer(http.Dir("."))
@@ -20,14 +26,16 @@ func main() {
 	mux.HandleFunc("GET /api/healthz", handleHealthz)
 	mux.HandleFunc("GET /admin/metrics", api.handleDisplayMetrics)
 	mux.HandleFunc("/api/reset", api.handleResetMetrics)
-	mux.HandleFunc("POST /api/validate_chirp", api.handleValidateChirp)
+	mux.HandleFunc("POST /api/chirps", api.handlePostChirp)
+    mux.HandleFunc("GET /api/chirps", api.handleGetChirps)
+    mux.HandleFunc("GET /api/chirps/{id}", api.handleGetChirp)
 	srv := http.Server{
 		Addr:    ADDRESS,
 		Handler: mux,
 	}
 
 	fmt.Println("Running server on", ADDRESS)
-	err := srv.ListenAndServe()
+    err = srv.ListenAndServe()
 	if err != nil {
 		panic(err)
 	}
