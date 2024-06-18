@@ -3,7 +3,6 @@ package database
 import (
 	"encoding/json"
 	"errors"
-	"log"
 	"os"
 	"regexp"
 	"sync"
@@ -16,62 +15,16 @@ type DB struct {
 
 type DBStructure struct {
 	Chirps map[int]Chirp `json:"chirps"`
-}
-
-type Chirp struct {
-	ID   int    `json:"id"`
-	Body string `json:"body"`
+    Users  map[int]User  `json:"users"`
 }
 
 func NewDB(path string) (*DB, error) {
-	db := &DB{
-		path: path,
-		mux:  &sync.RWMutex{},
-	}
-	err := db.ensureDB()
-	return db, err
-}
-
-func (db *DB) CreateChirp(body string) (Chirp, error) {
-	chirps := db.GetChirps()
-	lastID := len(chirps) + 1
-	chirp := Chirp{
-		ID:   lastID,
-		Body: cleanChirp(body),
-	}
-	chirps = append(chirps, chirp)
-	chirpsToSave := make(map[int]Chirp)
-	for _, v := range chirps {
-		chirpsToSave[v.ID] = v
-	}
-	db.writeDB(DBStructure{
-		Chirps: chirpsToSave,
-	})
-	return chirp, nil
-}
-
-func (db *DB) GetChirps() []Chirp {
-	data, err := db.loadDB()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var chirps []Chirp
-	for _, v := range data.Chirps {
-		chirps = append(chirps, v)
-	}
-
-	return chirps
-}
-
-func (db *DB) GetChirp(id int) (Chirp, bool) {
-	data, err := db.loadDB()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-    chirp, ok := data.Chirps[id]
-    return chirp, ok
+    db := &DB{
+        path: path,
+        mux:  &sync.RWMutex{},
+    }
+    err := db.ensureDB()
+    return db, err
 }
 
 func (db *DB) createDB() error {
@@ -118,19 +71,4 @@ func (db *DB) writeDB(dbStruct DBStructure) error {
 		return err
 	}
 	return nil
-}
-
-func cleanChirp(msg string) string {
-	badwords := [3]string{"kerfuffle", "sharbert", "fornax"}
-	clean := msg
-	for _, word := range badwords {
-		clean = cleanWord(clean, word)
-	}
-	return clean
-}
-
-func cleanWord(msg string, badword string) string {
-	re := regexp.MustCompile(`(?i)` + badword)
-	replacement := "****"
-	return re.ReplaceAllString(msg, replacement)
 }
