@@ -145,14 +145,14 @@ func (api *fsAPI) handlePostUser(w http.ResponseWriter, r *http.Request) {
 	}
 	params := paramsPostUser{}
 	decodeParams[paramsPostUser](w, r, &params)
-	chirp, err := api.db.CreateUser(params.Email)
+	user, err := api.db.CreateUser(params.Email)
 	if err != nil {
 		log.Printf("Error creating user: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	res, err := json.Marshal(chirp)
+	res, err := json.Marshal(user)
 	if err != nil {
 		handleJsonError(w, err)
 		return

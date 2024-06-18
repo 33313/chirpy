@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
-	"regexp"
 	"sync"
 )
 
@@ -29,7 +28,8 @@ func NewDB(path string) (*DB, error) {
 
 func (db *DB) createDB() error {
 	dbStruct := DBStructure{
-		Chirps: map[int]Chirp{},
+		Chirps: make(map[int]Chirp),
+        Users: make(map[int]User),
 	}
 	return db.writeDB(dbStruct)
 }

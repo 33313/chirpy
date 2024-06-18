@@ -31,8 +31,8 @@ func main() {
 	mux.HandleFunc("GET /api/chirps", api.handleGetChirps)
 	mux.HandleFunc("GET /api/chirps/{id}", api.handleGetChirp)
 
+    mux.HandleFunc("POST /api/users", api.handlePostUser)
 	mux.HandleFunc("GET /api/users/{id}", api.handleGetUser)
-	mux.HandleFunc("POST /api/users", api.handlePostUser)
 
 	srv := http.Server{
 		Addr:    ADDRESS,

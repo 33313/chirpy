@@ -13,8 +13,8 @@ func (db *DB) GetUser(id int) (User, bool) {
 		log.Fatal(err)
 	}
 
-	chirp, ok := data.Users[id]
-	return chirp, ok
+	user, ok := data.Users[id]
+	return user, ok
 }
 
 func (db *DB) GetUsers() []User {
@@ -42,7 +42,7 @@ func (db *DB) CreateUser(body string) (User, error) {
 		ID:    nextID,
 		Email: body,
 	}
-	dbStruct.Users[nextID] = user
+    dbStruct.Users[nextID] = user
 	db.writeDB(dbStruct)
 	return user, nil
 }
