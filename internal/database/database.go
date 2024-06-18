@@ -14,22 +14,22 @@ type DB struct {
 
 type DBStructure struct {
 	Chirps map[int]Chirp `json:"chirps"`
-    Users  map[int]User  `json:"users"`
+	Users  map[int]User  `json:"users"`
 }
 
 func NewDB(path string) (*DB, error) {
-    db := &DB{
-        path: path,
-        mux:  &sync.RWMutex{},
-    }
-    err := db.ensureDB()
-    return db, err
+	db := &DB{
+		path: path,
+		mux:  &sync.RWMutex{},
+	}
+	err := db.ensureDB()
+	return db, err
 }
 
 func (db *DB) createDB() error {
 	dbStruct := DBStructure{
 		Chirps: make(map[int]Chirp),
-        Users: make(map[int]User),
+		Users:  make(map[int]User),
 	}
 	return db.writeDB(dbStruct)
 }

@@ -42,7 +42,7 @@ func (db *DB) CreateUser(body string) (User, error) {
 		ID:    nextID,
 		Email: body,
 	}
-    dbStruct.Users[nextID] = user
+	dbStruct.Users[nextID] = user
 	db.writeDB(dbStruct)
 	return user, nil
 }
