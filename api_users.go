@@ -8,20 +8,24 @@ import (
 )
 
 func (api *fsAPI) handlePostUser(w http.ResponseWriter, r *http.Request) {
-	type paramsPostUser struct {
+	type requestParams struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
-	params := paramsPostUser{}
-	decodeParams[paramsPostUser](w, r, &params)
-	user, err := api.db.CreateUser(params.Email)
+	params := requestParams{}
+	decodeParams[requestParams](w, r, &params)
+
+	user, err := api.db.CreateUser(params.Email, params.Password)
 	if err != nil {
 		log.Printf("Error creating user: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	res, err := json.Marshal(user)
+	res, err := json.Marshal(UserSanitized{
+		ID:    user.ID,
+		Email: user.Email,
+	})
 	if err != nil {
 		handleJsonError(w, err)
 		return

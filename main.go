@@ -34,7 +34,7 @@ func main() {
 	mux.HandleFunc("POST /api/users", api.handlePostUser)
 	mux.HandleFunc("GET /api/users/{id}", api.handleGetUser)
 
-    mux.HandleFunc("POST /api/login", api.handleLogin)
+	mux.HandleFunc("POST /api/login", api.handleLogin)
 
 	srv := http.Server{
 		Addr:    ADDRESS,
