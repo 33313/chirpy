@@ -3,6 +3,7 @@ package database
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"os"
 	"sync"
 )
@@ -17,58 +18,53 @@ type DBStructure struct {
 	Users  map[int]User  `json:"users"`
 }
 
-func NewDB(path string) (*DB, error) {
+func NewDB(path string) *DB {
 	db := &DB{
 		path: path,
 		mux:  &sync.RWMutex{},
 	}
-	err := db.ensureDB()
-	return db, err
+	db.ensureDB()
+	return db
 }
 
-func (db *DB) createDB() error {
+func (db *DB) createDB() {
 	dbStruct := DBStructure{
 		Chirps: make(map[int]Chirp),
 		Users:  make(map[int]User),
 	}
-	return db.writeDB(dbStruct)
+	db.writeDB(dbStruct)
 }
 
-func (db *DB) ensureDB() error {
+func (db *DB) ensureDB() {
 	_, err := os.ReadFile(db.path)
 	if errors.Is(err, os.ErrNotExist) {
-		return db.createDB()
+		db.createDB()
 	}
-	return err
 }
 
-func (db *DB) loadDB() (DBStructure, error) {
+func (db *DB) loadDB() DBStructure {
 	db.mux.RLock()
 	defer db.mux.RUnlock()
-	err := db.ensureDB()
-
+	db.ensureDB()
 	dbStruct := DBStructure{}
 	data, err := os.ReadFile(db.path)
 	if errors.Is(err, os.ErrNotExist) {
-		return dbStruct, err
+		log.Fatalf("ERROR: Database file not found: %s", err)
 	}
-
 	err = json.Unmarshal(data, &dbStruct)
 	if err != nil {
-		return dbStruct, err
+		log.Fatalf("ERROR: Failed to unmarshal database: %s", err)
 	}
-	return dbStruct, nil
+	return dbStruct
 }
 
-func (db *DB) writeDB(dbStruct DBStructure) error {
+func (db *DB) writeDB(dbStruct DBStructure) {
 	data, err := json.Marshal(dbStruct)
 	if err != nil {
-		return err
+		log.Fatalf("ERROR: Failed to marshal DB for write: %s", err)
 	}
-
 	err = os.WriteFile(db.path, data, 0600)
 	if err != nil {
-		return err
+		log.Fatalf("ERROR: Failed to write DB: %s", err)
 	}
-	return nil
 }

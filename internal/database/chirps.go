@@ -1,7 +1,6 @@
 package database
 
 import (
-	"log"
 	"regexp"
 )
 
@@ -11,42 +10,29 @@ type Chirp struct {
 }
 
 func (db *DB) GetChirps() []Chirp {
-	data, err := db.loadDB()
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	data := db.loadDB()
 	var chirps []Chirp
 	for _, v := range data.Chirps {
 		chirps = append(chirps, v)
 	}
-
 	return chirps
 }
 
 func (db *DB) GetChirp(id int) (Chirp, bool) {
-	data, err := db.loadDB()
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	data := db.loadDB()
 	chirp, ok := data.Chirps[id]
 	return chirp, ok
 }
 
 func (db *DB) CreateChirp(body string) (Chirp, error) {
-	dbStruct, err := db.loadDB()
-	if err != nil {
-		log.Fatalf("Error creating user: %s", err)
-		return Chirp{}, err
-	}
-	nextID := len(dbStruct.Chirps) + 1
+	data := db.loadDB()
+	nextID := len(data.Chirps) + 1
 	chirp := Chirp{
 		ID:   nextID,
 		Body: cleanChirp(body),
 	}
-	dbStruct.Chirps[nextID] = chirp
-	db.writeDB(dbStruct)
+	data.Chirps[nextID] = chirp
+	db.writeDB(data)
 	return chirp, nil
 }
 
