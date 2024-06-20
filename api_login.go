@@ -32,11 +32,10 @@ func (api *fsAPI) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userSanitized := UserSanitized{
+	res, err := json.Marshal(UserSanitized{
 		ID:    user.ID,
 		Email: user.Email,
-	}
-	res, err := json.Marshal(userSanitized)
+	})
 	if err != nil {
 		handleJsonError(w, err)
 		return
