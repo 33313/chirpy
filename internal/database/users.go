@@ -13,6 +13,8 @@ type User struct {
 	Password []byte `json:"password"`
 }
 
+var ErrUserNotFound = errors.New("User not found")
+
 func (db *DB) GetUser(id int) (User, bool) {
 	data := db.loadDB()
 	user, ok := data.Users[id]
@@ -34,7 +36,7 @@ func (db *DB) CreateUser(email string, password string) (User, error) {
 		return User{}, errors.New("User already exists.")
 	}
 	nextID := len(data.Users) + 1
-	pwd, err := bcrypt.GenerateFromPassword([]byte(password), 10)
+	pwd, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		log.Fatalf("Error generating password hash: %s", err)
 		return User{}, err
@@ -58,4 +60,15 @@ func (db *DB) GetUserByEmail(email string) (User, bool) {
 		}
 	}
 	return User{}, false
+}
+
+func (db *DB) UpdateUser(id int, newUser User) (User, error) {
+    data := db.loadDB()
+    _, ok := data.Users[id]
+    if !ok {
+        return User{}, ErrUserNotFound
+    }
+    data.Users[id] = newUser
+    db.writeDB(data)
+    return newUser, nil
 }
