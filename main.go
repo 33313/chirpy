@@ -2,8 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/myshkovsky/chirpy/internal/database"
 	"net/http"
+	"os"
+
+	"github.com/joho/godotenv"
+	"github.com/myshkovsky/chirpy/internal/database"
 )
 
 const (
@@ -11,13 +14,12 @@ const (
 )
 
 func main() {
-	newDB, err := database.NewDB("./database.json")
-	if err != nil {
-		panic(err)
-	}
-	api := fsAPI{
-		hits: 0,
-		db:   newDB,
+	godotenv.Load()
+	newDB := database.NewDB("./database.json")
+	api := API{
+		hits:      0,
+		db:        newDB,
+		jwtSecret: os.Getenv("JWT_SECRET"),
 	}
 	mux := http.NewServeMux()
 	fs := http.FileServer(http.Dir("."))
@@ -33,6 +35,7 @@ func main() {
 
 	mux.HandleFunc("POST /api/users", api.handlePostUser)
 	mux.HandleFunc("GET /api/users/{id}", api.handleGetUser)
+	mux.HandleFunc("PUT /api/users", api.handlePutUser)
 
 	mux.HandleFunc("POST /api/login", api.handleLogin)
 
@@ -42,7 +45,7 @@ func main() {
 	}
 
 	fmt.Println("Running server on", ADDRESS)
-	err = srv.ListenAndServe()
+	err := srv.ListenAndServe()
 	if err != nil {
 		panic(err)
 	}

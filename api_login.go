@@ -4,18 +4,22 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/myshkovsky/chirpy/internal/auth"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UserSanitized struct {
-	ID    int    `json:"id"`
-	Email string `json:"email"`
+	ID      int    `json:"id"`
+	Email   string `json:"email"`
+	Token   string `json:"token"`
+	Refresh string `json:"refresh_token"`
 }
 
-func (api *fsAPI) handleLogin(w http.ResponseWriter, r *http.Request) {
+func (api *API) handleLogin(w http.ResponseWriter, r *http.Request) {
 	type requestParams struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
+		Email            string `json:"email"`
+		Password         string `json:"password"`
+		ExpiresInSeconds int    `json:"expires_in_seconds,omitempty"`
 	}
 	params := requestParams{}
 	decodeParams[requestParams](w, r, &params)
@@ -32,9 +36,14 @@ func (api *fsAPI) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	token, err := auth.CreateJWT(user.ID, api.jwtSecret)
+	refreshToken := auth.CreateRefreshToken()
+
 	res, err := json.Marshal(UserSanitized{
-		ID:    user.ID,
-		Email: user.Email,
+		ID:      user.ID,
+		Email:   user.Email,
+		Token:   token,
+		Refresh: refreshToken,
 	})
 	if err != nil {
 		handleJsonError(w, err)

@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-func (api *fsAPI) handlePostChirp(w http.ResponseWriter, r *http.Request) {
+func (api *API) handlePostChirp(w http.ResponseWriter, r *http.Request) {
 	type requestParams struct {
 		Body string `json:"body"`
 	}
@@ -46,7 +46,7 @@ func (api *fsAPI) handlePostChirp(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
-func (api *fsAPI) handleGetChirps(w http.ResponseWriter, r *http.Request) {
+func (api *API) handleGetChirps(w http.ResponseWriter, r *http.Request) {
 	chirps := api.db.GetChirps()
 	res, err := json.Marshal(chirps)
 	if err != nil {
@@ -58,7 +58,7 @@ func (api *fsAPI) handleGetChirps(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
-func (api *fsAPI) handleGetChirp(w http.ResponseWriter, r *http.Request) {
+func (api *API) handleGetChirp(w http.ResponseWriter, r *http.Request) {
 	n, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		log.Fatalf("Error converting string->int: %s", err)

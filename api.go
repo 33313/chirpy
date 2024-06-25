@@ -9,9 +9,10 @@ import (
 	"github.com/myshkovsky/chirpy/internal/database"
 )
 
-type fsAPI struct {
-	hits int
-	db   *database.DB
+type API struct {
+	hits      int
+	db        *database.DB
+	jwtSecret string
 }
 
 type fail struct {
@@ -38,14 +39,14 @@ func decodeParams[T any](w http.ResponseWriter, r *http.Request, data *T) {
 	}
 }
 
-func (api *fsAPI) mwMetrics(next http.Handler) http.Handler {
+func (api *API) mwMetrics(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		api.hits++
 		next.ServeHTTP(w, r)
 	})
 }
 
-func (api *fsAPI) handleDisplayMetrics(w http.ResponseWriter, r *http.Request) {
+func (api *API) handleDisplayMetrics(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(fmt.Sprintf(`
@@ -58,7 +59,7 @@ func (api *fsAPI) handleDisplayMetrics(w http.ResponseWriter, r *http.Request) {
 `, api.hits)))
 }
 
-func (api *fsAPI) handleResetMetrics(w http.ResponseWriter, r *http.Request) {
+func (api *API) handleResetMetrics(w http.ResponseWriter, r *http.Request) {
 	api.hits = 0
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
