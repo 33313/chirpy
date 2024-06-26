@@ -25,6 +25,12 @@ func (db *DB) GetChirp(id int) (Chirp, bool) {
 	return chirp, ok
 }
 
+func (db *DB) DeleteChirp(id int) {
+	data := db.loadDB()
+	delete(data.Chirps, id)
+	db.writeDB(data)
+}
+
 func (db *DB) CreateChirp(body string, authorID int) (Chirp, error) {
 	data := db.loadDB()
 	nextID := len(data.Chirps) + 1
