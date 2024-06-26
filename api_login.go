@@ -2,9 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/myshkovsky/chirpy/internal/auth"
+	"github.com/myshkovsky/chirpy/internal/database"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -49,6 +51,18 @@ func (api *API) handleLogin(w http.ResponseWriter, r *http.Request) {
 		handleJsonError(w, err)
 		return
 	}
+
+    _, err = api.db.UpdateUser(user.ID, database.User{
+    	ID:       user.ID,
+    	Email:  user.Email,
+    	Password: user.Password,
+    	Refresh:  refreshToken,
+    })
+    if err != nil {
+        log.Println("Error updating user: %s", err)
+        w.WriteHeader(http.StatusInternalServerError)
+        return
+    }
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

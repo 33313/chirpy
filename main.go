@@ -38,6 +38,8 @@ func main() {
 	mux.HandleFunc("PUT /api/users", api.handlePutUser)
 
 	mux.HandleFunc("POST /api/login", api.handleLogin)
+	mux.HandleFunc("POST /api/refresh", api.handleRefresh)
+	mux.HandleFunc("POST /api/revoke", api.handleRevoke)
 
 	srv := http.Server{
 		Addr:    ADDRESS,

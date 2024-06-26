@@ -10,7 +10,8 @@ import (
 type User struct {
 	ID       int    `json:"id"`
 	Email    string `json:"email"`
-	Password []byte `json:"password"`
+	Password []byte `json:"password,omitempty"`
+	Refresh  string `json:"refresh_token,omitempty"`
 }
 
 var ErrUserNotFound = errors.New("User not found")
@@ -62,13 +63,26 @@ func (db *DB) GetUserByEmail(email string) (User, bool) {
 	return User{}, false
 }
 
+func (db *DB) GetUserByToken(refreshToken string) (User, bool) {
+	data := db.loadDB()
+	for _, v := range data.Users {
+		if v.Refresh == "" {
+			continue
+		}
+		if v.Refresh == refreshToken {
+			return v, true
+		}
+	}
+	return User{}, false
+}
+
 func (db *DB) UpdateUser(id int, newUser User) (User, error) {
-    data := db.loadDB()
-    _, ok := data.Users[id]
-    if !ok {
-        return User{}, ErrUserNotFound
-    }
-    data.Users[id] = newUser
-    db.writeDB(data)
-    return newUser, nil
+	data := db.loadDB()
+	_, ok := data.Users[id]
+	if !ok {
+		return User{}, ErrUserNotFound
+	}
+	data.Users[id] = newUser
+	db.writeDB(data)
+	return newUser, nil
 }

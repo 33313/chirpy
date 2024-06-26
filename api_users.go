@@ -106,7 +106,7 @@ func (api *API) handlePutUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, ok := api.db.GetUser(id)
+	oldUser, ok := api.db.GetUser(id)
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -122,6 +122,7 @@ func (api *API) handlePutUser(w http.ResponseWriter, r *http.Request) {
 		ID:       id,
 		Email:    params.Email,
 		Password: pwd,
+        Refresh: oldUser.Refresh,
 	})
 
 	res, err := json.Marshal(database.User{

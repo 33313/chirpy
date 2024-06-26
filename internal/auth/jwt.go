@@ -65,7 +65,7 @@ func GetBearerToken(header string) (string, error) {
 }
 
 func CreateRefreshToken() string {
-    bytes := make([]byte, 32)
-    rand.Read(bytes)
+	bytes := make([]byte, 32)
+	rand.Read(bytes)
 	return hex.EncodeToString(bytes)
 }
