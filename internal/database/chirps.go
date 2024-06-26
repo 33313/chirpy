@@ -5,8 +5,9 @@ import (
 )
 
 type Chirp struct {
-	ID   int    `json:"id"`
-	Body string `json:"body"`
+	ID       int    `json:"id"`
+	Body     string `json:"body"`
+	AuthorID int    `json:"author_id"`
 }
 
 func (db *DB) GetChirps() []Chirp {
@@ -24,12 +25,13 @@ func (db *DB) GetChirp(id int) (Chirp, bool) {
 	return chirp, ok
 }
 
-func (db *DB) CreateChirp(body string) (Chirp, error) {
+func (db *DB) CreateChirp(body string, authorID int) (Chirp, error) {
 	data := db.loadDB()
 	nextID := len(data.Chirps) + 1
 	chirp := Chirp{
-		ID:   nextID,
-		Body: cleanChirp(body),
+		ID:       nextID,
+		Body:     cleanChirp(body),
+		AuthorID: authorID,
 	}
 	data.Chirps[nextID] = chirp
 	db.writeDB(data)

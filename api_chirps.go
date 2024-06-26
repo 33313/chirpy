@@ -5,9 +5,32 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/myshkovsky/chirpy/internal/auth"
 )
 
 func (api *API) handlePostChirp(w http.ResponseWriter, r *http.Request) {
+	token, err := auth.GetBearerToken(r.Header.Get("Authorization"))
+	if err != nil {
+		log.Printf("Bearer token error: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	idStr, err := auth.ValidateJWT(token, api.jwtSecret)
+	if err != nil {
+		log.Printf("Error validating JWT: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	userID, err := strconv.Atoi(idStr)
+	if err != nil {
+		log.Printf("Error converting str->int: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	type requestParams struct {
 		Body string `json:"body"`
 	}
@@ -28,7 +51,7 @@ func (api *API) handlePostChirp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chirp, err := api.db.CreateChirp(params.Body)
+	chirp, err := api.db.CreateChirp(params.Body, userID)
 	if err != nil {
 		log.Printf("Error creating Chirp: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
