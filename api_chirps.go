@@ -1,9 +1,11 @@
 package main
 
 import (
+	"cmp"
 	"encoding/json"
 	"log"
 	"net/http"
+	"slices"
 	"strconv"
 
 	"github.com/myshkovsky/chirpy/internal/auth"
@@ -71,12 +73,14 @@ func (api *API) handlePostChirp(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api *API) handleGetChirps(w http.ResponseWriter, r *http.Request) {
-	s := r.URL.Query().Get("author_id")
+	byAuthor := r.URL.Query().Get("author_id")
+	sort := r.URL.Query().Get("sort")
+
 	var chirps []database.Chirp
-	if s == "" {
+	if byAuthor == "" {
 		chirps = api.db.GetChirps()
 	} else {
-		authorID, err := strconv.Atoi(s)
+		authorID, err := strconv.Atoi(byAuthor)
 		if err != nil {
 			log.Printf("Error converting str->int: %s", err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -84,6 +88,20 @@ func (api *API) handleGetChirps(w http.ResponseWriter, r *http.Request) {
 		}
 		chirps = api.db.GetChirps(authorID)
 	}
+
+	switch sort {
+	case "asc":
+		slices.SortFunc(chirps, func(a, b database.Chirp) int {
+			return cmp.Compare(a.ID, b.ID)
+		})
+	case "desc":
+		slices.SortFunc(chirps, func(a, b database.Chirp) int {
+			return cmp.Compare(a.ID, b.ID)
+		})
+		slices.Reverse(chirps)
+	default:
+	}
+
 	res, err := json.Marshal(chirps)
 	if err != nil {
 		handleJsonError(w, err)
