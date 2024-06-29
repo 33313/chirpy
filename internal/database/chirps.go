@@ -10,10 +10,19 @@ type Chirp struct {
 	AuthorID int    `json:"author_id"`
 }
 
-func (db *DB) GetChirps() []Chirp {
+// Accepts optional AuthorID param to allow filtering by author ID
+// ...because Google can't stop me from method overloading
+func (db *DB) GetChirps(params ...int) []Chirp {
+	filterByAuthor := false
+	if len(params) > 0 {
+		filterByAuthor = true
+	}
 	data := db.loadDB()
 	var chirps []Chirp
 	for _, v := range data.Chirps {
+		if filterByAuthor && v.AuthorID != params[0] {
+			continue
+		}
 		chirps = append(chirps, v)
 	}
 	return chirps

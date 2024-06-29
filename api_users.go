@@ -15,6 +15,7 @@ func (api *API) handlePostUser(w http.ResponseWriter, r *http.Request) {
 	type postUserSanitized struct {
 		ID    int    `json:"id"`
 		Email string `json:"email"`
+		Red   bool   `json:"is_chirpy_red"`
 	}
 	type requestParams struct {
 		Email    string `json:"email"`
@@ -33,6 +34,7 @@ func (api *API) handlePostUser(w http.ResponseWriter, r *http.Request) {
 	res, err := json.Marshal(postUserSanitized{
 		ID:    user.ID,
 		Email: user.Email,
+		Red:   user.Red,
 	})
 	if err != nil {
 		handleJsonError(w, err)
@@ -122,12 +124,14 @@ func (api *API) handlePutUser(w http.ResponseWriter, r *http.Request) {
 		ID:       id,
 		Email:    params.Email,
 		Password: pwd,
-        Refresh: oldUser.Refresh,
+		Refresh:  oldUser.Refresh,
+		Red:      oldUser.Red,
 	})
 
 	res, err := json.Marshal(database.User{
 		ID:    id,
 		Email: params.Email,
+		Red:   oldUser.Red,
 	})
 	if err != nil {
 		handleJsonError(w, err)

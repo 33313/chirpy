@@ -12,6 +12,7 @@ type User struct {
 	Email    string `json:"email"`
 	Password []byte `json:"password,omitempty"`
 	Refresh  string `json:"refresh_token,omitempty"`
+	Red      bool   `json:"is_chirpy_red"`
 }
 
 var ErrUserNotFound = errors.New("User not found")
@@ -46,6 +47,7 @@ func (db *DB) CreateUser(email string, password string) (User, error) {
 		ID:       nextID,
 		Email:    email,
 		Password: pwd,
+		Red:      false,
 	}
 	data.Users[nextID] = user
 	db.writeDB(data)
@@ -85,4 +87,21 @@ func (db *DB) UpdateUser(id int, newUser User) (User, error) {
 	data.Users[id] = newUser
 	db.writeDB(data)
 	return newUser, nil
+}
+
+func (db *DB) UpgradeUser(id int) error {
+	data := db.loadDB()
+	user, ok := data.Users[id]
+	if !ok {
+		return ErrUserNotFound
+	}
+	data.Users[id] = User{
+		ID:       user.ID,
+		Email:    user.Email,
+		Password: user.Password,
+		Refresh:  user.Refresh,
+		Red:      true,
+	}
+    db.writeDB(data)
+	return nil
 }

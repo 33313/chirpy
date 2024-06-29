@@ -13,6 +13,7 @@ type API struct {
 	hits      int
 	db        *database.DB
 	jwtSecret string
+	polka     string
 }
 
 type fail struct {

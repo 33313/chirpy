@@ -15,6 +15,7 @@ type UserSanitized struct {
 	Email   string `json:"email"`
 	Token   string `json:"token"`
 	Refresh string `json:"refresh_token"`
+	Red     bool   `json:"is_chirpy_red"`
 }
 
 func (api *API) handleLogin(w http.ResponseWriter, r *http.Request) {
@@ -46,23 +47,25 @@ func (api *API) handleLogin(w http.ResponseWriter, r *http.Request) {
 		Email:   user.Email,
 		Token:   token,
 		Refresh: refreshToken,
+		Red:     user.Red,
 	})
 	if err != nil {
 		handleJsonError(w, err)
 		return
 	}
 
-    _, err = api.db.UpdateUser(user.ID, database.User{
-    	ID:       user.ID,
-    	Email:  user.Email,
-    	Password: user.Password,
-    	Refresh:  refreshToken,
-    })
-    if err != nil {
-        log.Println("Error updating user: %s", err)
-        w.WriteHeader(http.StatusInternalServerError)
-        return
-    }
+	_, err = api.db.UpdateUser(user.ID, database.User{
+		ID:       user.ID,
+		Email:    user.Email,
+		Password: user.Password,
+		Refresh:  refreshToken,
+		Red:      user.Red,
+	})
+	if err != nil {
+		log.Println("Error updating user: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

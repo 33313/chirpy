@@ -20,6 +20,7 @@ func main() {
 		hits:      0,
 		db:        newDB,
 		jwtSecret: os.Getenv("JWT_SECRET"),
+		polka:     os.Getenv("POLKA"),
 	}
 	mux := http.NewServeMux()
 	fs := http.FileServer(http.Dir("."))
@@ -41,6 +42,8 @@ func main() {
 	mux.HandleFunc("POST /api/login", api.handleLogin)
 	mux.HandleFunc("POST /api/refresh", api.handleRefresh)
 	mux.HandleFunc("POST /api/revoke", api.handleRevoke)
+
+	mux.HandleFunc("POST /api/polka/webhooks", api.handlePolkaWebhooks)
 
 	srv := http.Server{
 		Addr:    ADDRESS,

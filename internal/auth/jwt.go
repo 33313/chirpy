@@ -58,7 +58,7 @@ func GetBearerToken(header string) (string, error) {
 		return "", ErrNoAuthHeader
 	}
 	split := strings.Split(header, " ")
-	if len(split) != 2 || split[0] != "Bearer" {
+	if len(split) != 2 {
 		return "", ErrBadAuthHeader
 	}
 	return split[1], nil

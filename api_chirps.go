@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/myshkovsky/chirpy/internal/auth"
+	"github.com/myshkovsky/chirpy/internal/database"
 )
 
 func (api *API) handlePostChirp(w http.ResponseWriter, r *http.Request) {
@@ -70,7 +71,19 @@ func (api *API) handlePostChirp(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api *API) handleGetChirps(w http.ResponseWriter, r *http.Request) {
-	chirps := api.db.GetChirps()
+	s := r.URL.Query().Get("author_id")
+	var chirps []database.Chirp
+	if s == "" {
+		chirps = api.db.GetChirps()
+	} else {
+		authorID, err := strconv.Atoi(s)
+		if err != nil {
+			log.Printf("Error converting str->int: %s", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		chirps = api.db.GetChirps(authorID)
+	}
 	res, err := json.Marshal(chirps)
 	if err != nil {
 		handleJsonError(w, err)

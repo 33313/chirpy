@@ -27,7 +27,8 @@ func (api *API) handleRevoke(w http.ResponseWriter, r *http.Request) {
 		Email:    user.Email,
 		Password: user.Password,
 		Refresh:  "",
+		Red:      user.Red,
 	})
 
-    w.WriteHeader(http.StatusNoContent)
+	w.WriteHeader(http.StatusNoContent)
 }
