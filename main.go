@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/myshkovsky/chirpy/internal/database"
+	"github.com/33313/chirpy/internal/database"
 )
 
 const (

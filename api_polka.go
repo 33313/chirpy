@@ -4,8 +4,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/myshkovsky/chirpy/internal/auth"
-	"github.com/myshkovsky/chirpy/internal/database"
+	"github.com/33313/chirpy/internal/auth"
+	"github.com/33313/chirpy/internal/database"
 )
 
 func (api *API) handlePolkaWebhooks(w http.ResponseWriter, r *http.Request) {
